@@ -345,7 +345,7 @@ namespace NHibernate.Persister.Entity
 		/// <summary>
 		/// Load an instance of the persistent class.
 		/// </summary>
-		object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session);
+		object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, bool checkCache);
 
 		/// <summary>
 		/// Do a version check (optional operation)

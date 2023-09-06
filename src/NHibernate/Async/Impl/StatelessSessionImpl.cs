@@ -504,7 +504,7 @@ namespace NHibernate.Impl
 				// and the get may miss an entity which should be there.
 				await (FlushAsync(cancellationToken)).ConfigureAwait(false);
 
-				object result = await (Factory.GetEntityPersister(entityName).LoadAsync(id, null, lockMode ?? LockMode.None, this, cancellationToken)).ConfigureAwait(false);
+				object result = await (Factory.GetEntityPersister(entityName).LoadAsync(id, null, lockMode ?? LockMode.None, this, true, cancellationToken)).ConfigureAwait(false);
 				if (temporaryPersistenceContext.IsLoadFinished)
 				{
 					temporaryPersistenceContext.Clear();
@@ -610,7 +610,7 @@ namespace NHibernate.Impl
 				try
 				{
 					FetchProfile = "refresh";
-					result = await (persister.LoadAsync(id, entity, lockMode, this, cancellationToken)).ConfigureAwait(false);
+					result = await (persister.LoadAsync(id, entity, lockMode, this, true, cancellationToken)).ConfigureAwait(false);
 				}
 				finally
 				{

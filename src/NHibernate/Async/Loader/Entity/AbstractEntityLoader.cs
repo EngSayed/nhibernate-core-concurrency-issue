@@ -26,7 +26,7 @@ namespace NHibernate.Loader.Entity
 	public abstract partial class AbstractEntityLoader : OuterJoinLoader, IUniqueEntityLoader
 	{
 
-		public Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, CancellationToken cancellationToken)
+		public Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken)
 		{
 			if (cancellationToken.IsCancellationRequested)
 			{

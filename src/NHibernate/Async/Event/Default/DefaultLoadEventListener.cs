@@ -311,7 +311,7 @@ namespace NHibernate.Event.Default
 				log.Debug("object not resolved in any cache: {0}", MessageHelper.InfoString(persister, @event.EntityId, @event.Session.Factory));
 			}
 
-			return await (LoadFromDatasourceAsync(@event, persister, keyToLoad, options, cancellationToken)).ConfigureAwait(false);
+			return await (LoadFromDatasourceAsync(@event, persister, keyToLoad, options, false, cancellationToken)).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -321,9 +321,10 @@ namespace NHibernate.Event.Default
 		/// <param name="persister">The persister for the entity being requested for load </param>
 		/// <param name="keyToLoad">The EntityKey representing the entity to be loaded. </param>
 		/// <param name="options">The load options. </param>
+		/// <param name="checkCache">A flag to check the cache or not</param>
 		/// <param name="cancellationToken">A cancellation token that can be used to cancel the work</param>
 		/// <returns> The object loaded from the datasource, or null if not found. </returns>
-		protected virtual async Task<object> LoadFromDatasourceAsync(LoadEvent @event, IEntityPersister persister, EntityKey keyToLoad, LoadType options, CancellationToken cancellationToken)
+		protected virtual async Task<object> LoadFromDatasourceAsync(LoadEvent @event, IEntityPersister persister, EntityKey keyToLoad, LoadType options, bool checkCache, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			ISessionImplementor source = @event.Session;
@@ -334,7 +335,7 @@ namespace NHibernate.Event.Default
 				stopWatch = Stopwatch.StartNew();
 			}
 
-			object entity = await (persister.LoadAsync(@event.EntityId, @event.InstanceToLoad, @event.LockMode, source, cancellationToken)).ConfigureAwait(false);
+			object entity = await (persister.LoadAsync(@event.EntityId, @event.InstanceToLoad, @event.LockMode, source, checkCache, cancellationToken)).ConfigureAwait(false);
 
 			if (stopWatch != null && @event.IsAssociationFetch)
 			{

@@ -23,7 +23,7 @@ namespace NHibernate.Loader.Entity
 	public partial class BatchingEntityLoader : AbstractBatchingEntityLoader
 	{
 
-		public override async Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, CancellationToken cancellationToken)
+		public override async Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			object[] batch =
@@ -44,7 +44,7 @@ namespace NHibernate.Loader.Entity
 				}
 			}
 
-			return await (((IUniqueEntityLoader) loaders[batchSizes.Length - 1]).LoadAsync(id, optionalObject, session, cancellationToken)).ConfigureAwait(false);
+			return await (((IUniqueEntityLoader) loaders[batchSizes.Length - 1]).LoadAsync(id, optionalObject, session, checkCache, cancellationToken)).ConfigureAwait(false);
 		}
 	}
 }

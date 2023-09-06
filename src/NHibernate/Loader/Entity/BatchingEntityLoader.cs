@@ -26,7 +26,7 @@ namespace NHibernate.Loader.Entity
 			idType = persister.IdentifierType;
 		}
 
-		public override object Load(object id, object optionalObject, ISessionImplementor session)
+		public override object Load(object id, object optionalObject, ISessionImplementor session, bool checkCache)
 		{
 			object[] batch =
 				session.PersistenceContext.BatchFetchQueue.GetEntityBatch(Persister, id, batchSizes[0]);
@@ -46,7 +46,7 @@ namespace NHibernate.Loader.Entity
 				}
 			}
 
-			return ((IUniqueEntityLoader) loaders[batchSizes.Length - 1]).Load(id, optionalObject, session);
+			return ((IUniqueEntityLoader) loaders[batchSizes.Length - 1]).Load(id, optionalObject, session, checkCache);
 		}
 
 		public static IUniqueEntityLoader CreateBatchingEntityLoader(IOuterJoinLoadable persister, int maxBatchSize,

@@ -20,15 +20,15 @@ namespace NHibernate.Loader.Entity
 	internal partial class DynamicBatchingEntityLoader : AbstractBatchingEntityLoader
 	{
 
-		public override async Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, CancellationToken cancellationToken)
+		public override async Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			object[] batch = await (session.PersistenceContext.BatchFetchQueue.GetEntityBatchAsync(Persister, id, _maxBatchSize, cancellationToken)).ConfigureAwait(false);
+			object[] batch = await (session.PersistenceContext.BatchFetchQueue.GetEntityBatchAsync(Persister, id, _maxBatchSize, checkCache, cancellationToken)).ConfigureAwait(false);
 
 			var numberOfIds = DynamicBatchingHelper.GetIdsToLoad(batch, out var idsToLoad);
 			if (numberOfIds <= 1)
 			{
-				return await (_singleKeyLoader.LoadAsync(id, optionalObject, session, cancellationToken)).ConfigureAwait(false);
+				return await (_singleKeyLoader.LoadAsync(id, optionalObject, session, checkCache, cancellationToken)).ConfigureAwait(false);
 			}
 
 			QueryParameters qp = BuildQueryParameters(id, idsToLoad, optionalObject);

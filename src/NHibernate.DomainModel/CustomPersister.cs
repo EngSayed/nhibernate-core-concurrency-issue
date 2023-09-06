@@ -302,7 +302,7 @@ namespace NHibernate.DomainModel
 			get { return false; }
 		}
 
-		public object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session)
+		public object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, bool checkCache)
 		{
 			// fails when optional object is supplied
 			Custom clone = null;

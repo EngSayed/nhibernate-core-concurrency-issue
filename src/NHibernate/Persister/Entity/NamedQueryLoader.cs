@@ -20,7 +20,7 @@ namespace NHibernate.Persister.Entity
 			this.persister = persister;
 		}
 
-		public object Load(object id, object optionalObject, ISessionImplementor session)
+		public object Load(object id, object optionalObject, ISessionImplementor session, bool checkCache)
 		{
 			if (log.IsDebugEnabled())
 			{

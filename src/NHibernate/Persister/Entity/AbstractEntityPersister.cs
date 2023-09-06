@@ -263,7 +263,7 @@ namespace NHibernate.Persister.Entity
 
 		// This must be a Lazy<T>, because instances of this class must be thread safe.
 		private readonly Lazy<string[]> defaultUniqueKeyPropertyNamesForSelectId;
-		private readonly Dictionary<string, int> propertySubclassJoinTableNumbersByName;
+		private readonly Dictionary<string, int> propertyTableNumbersByNameAndSubclass = new Dictionary<string, int>();
 
 		protected AbstractEntityPersister(PersistentClass persistentClass, ICacheConcurrencyStrategy cache,
 																			ISessionFactoryImplementor factory)
@@ -441,17 +441,6 @@ namespace NHibernate.Persister.Entity
 			List<bool> columnSelectables = new List<bool>();
 			List<bool> propNullables = new List<bool>();
 
-			if (persistentClass.SubclassJoinClosureIterator.Any())
-			{
-				propertySubclassJoinTableNumbersByName = new Dictionary<string, int>();
-				foreach (Property prop in persistentClass.SubclassPropertyClosureIterator)
-				{
-					var joinNumber = persistentClass.GetJoinNumber(prop);
-					if (joinNumber != 0)
-						propertySubclassJoinTableNumbersByName[prop.PersistentClass.EntityName + '.' + prop.Name] = joinNumber;
-				}
-			}
-
 			foreach (Property prop in persistentClass.SubclassPropertyClosureIterator)
 			{
 				names.Add(prop.Name);
@@ -460,6 +449,8 @@ namespace NHibernate.Persister.Entity
 				definedBySubclass.Add(isDefinedBySubclass);
 				propNullables.Add(prop.IsOptional || isDefinedBySubclass); //TODO: is this completely correct?
 				types.Add(prop.Type);
+				propertyTableNumbersByNameAndSubclass[prop.PersistentClass.EntityName + '.' + prop.Name] =
+					persistentClass.GetJoinNumber(prop);
 
 				string[] cols = new string[prop.ColumnSpan];
 				string[] forms = new string[prop.ColumnSpan];
@@ -1134,15 +1125,12 @@ namespace NHibernate.Persister.Entity
 
 		protected abstract int GetSubclassPropertyTableNumber(int i);
 
-		internal int GetSubclassJoinPropertyTableNumber(string propertyName, string entityName)
+		internal int GetSubclassPropertyTableNumber(string propertyName, string entityName)
 		{
-			if (propertySubclassJoinTableNumbersByName == null)
-				return 0;
-
 			var type = propertyMapping.ToType(propertyName);
 			if (type.IsAssociationType && ((IAssociationType) type).UseLHSPrimaryKey)
 				return 0;
-			propertySubclassJoinTableNumbersByName.TryGetValue(entityName + '.' + propertyName, out var tabnum);
+			propertyTableNumbersByNameAndSubclass.TryGetValue(entityName + '.' + propertyName, out var tabnum);
 			return tabnum;
 		}
 
@@ -3741,12 +3729,6 @@ namespace NHibernate.Persister.Entity
 			if (!filterHelper.IsAffectedBy(enabledFilters))
 				return filterFragment;
 
-			return FilterFragment(filterHelper, alias, enabledFilters, filterFragment);
-		}
-
-		//TODO 6.0: Move to IEntityPersister and adjust usages accordingly
-		public virtual string FilterFragment(FilterHelper filterHelper, string alias, IDictionary<string, IFilter> enabledFilters, string filterFragment)
-		{
 			var sessionFilterFragment = new StringBuilder();
 			filterHelper.Render(sessionFilterFragment, GenerateFilterConditionAlias(alias), GetColumnsToTableAliasMap(alias), enabledFilters);
 			return sessionFilterFragment.Append(filterFragment).ToString();
@@ -4121,7 +4103,7 @@ namespace NHibernate.Persister.Entity
 		/// <summary>
 		/// Load an instance using the appropriate loader (as determined by <see cref="GetAppropriateLoader" />
 		/// </summary>
-		public object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session)
+		public object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, bool checkCache)
 		{
 			if (log.IsDebugEnabled())
 			{
@@ -4129,7 +4111,7 @@ namespace NHibernate.Persister.Entity
 			}
 
 			IUniqueEntityLoader loader = GetAppropriateLoader(lockMode, session);
-			return loader.Load(id, optionalObject, session);
+			return loader.Load(id, optionalObject, session, checkCache);
 		}
 
 		private IUniqueEntityLoader GetAppropriateLoader(LockMode lockMode, ISessionImplementor session)
@@ -4461,17 +4443,10 @@ namespace NHibernate.Persister.Entity
 			IJoinable rhs, string rhsAlias, string lhsAlias, string entitySuffix, string collectionSuffix,
 			bool includeCollectionColumns, bool includeLazyProperties)
 		{
-			return SelectFragment(lhsAlias, collectionSuffix, includeCollectionColumns, new EntityLoadInfo(entitySuffix) {IncludeLazyProps = includeLazyProperties});
+			return SelectFragment(rhs, rhsAlias, lhsAlias, collectionSuffix, includeCollectionColumns, new EntityLoadInfo(entitySuffix) {IncludeLazyProps = includeLazyProperties});
 		}
 
-		//Since v5.5
-		[Obsolete("Please use overload without rhs and rhsAlias parameters")]
 		public string SelectFragment(IJoinable rhs, string rhsAlias, string lhsAlias, string collectionSuffix, bool includeCollectionColumns, EntityLoadInfo entityInfo)
-		{
-			return SelectFragment(lhsAlias, collectionSuffix, includeCollectionColumns, entityInfo);
-		}
-
-		public string SelectFragment(string lhsAlias, string collectionSuffix, bool includeCollectionColumns, EntityLoadInfo entityInfo)
 		{
 			return GetIdentifierSelectFragment(lhsAlias, entityInfo.EntitySuffix).ToSqlStringFragment(false) +
 			       GetPropertiesSelectFragment(
@@ -4897,7 +4872,7 @@ namespace NHibernate.Persister.Entity
 			var classes = subclassPersister.PropertySubclassNames;
 			for (var i = 0; i < props.Length; i++)
 			{
-				var propTableNumber = GetSubclassJoinPropertyTableNumber(props[i], classes[i]);
+				var propTableNumber = GetSubclassPropertyTableNumber(props[i], classes[i]);
 				if (IsSubclassTableSequentialSelect(propTableNumber) && !IsSubclassTableLazy(propTableNumber))
 				{
 					tableNumbers.Add(propTableNumber);

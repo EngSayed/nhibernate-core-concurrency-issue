@@ -18,14 +18,14 @@ namespace NHibernate.Loader.Entity
 			this._dynamicEntityLoader = new DynamicEntityLoader(persister, lockMode, factory, enabledFilters);
 		}
 
-		public override object Load(object id, object optionalObject, ISessionImplementor session)
+		public override object Load(object id, object optionalObject, ISessionImplementor session, bool checkCache)
 		{
-			object[] batch = session.PersistenceContext.BatchFetchQueue.GetEntityBatch(Persister, id, _maxBatchSize);
+			object[] batch = session.PersistenceContext.BatchFetchQueue.GetEntityBatch(Persister, id, _maxBatchSize, checkCache);
 
 			var numberOfIds = DynamicBatchingHelper.GetIdsToLoad(batch, out var idsToLoad);
 			if (numberOfIds <= 1)
 			{
-				return _singleKeyLoader.Load(id, optionalObject, session);
+				return _singleKeyLoader.Load(id, optionalObject, session, checkCache);
 			}
 
 			QueryParameters qp = BuildQueryParameters(id, idsToLoad, optionalObject);

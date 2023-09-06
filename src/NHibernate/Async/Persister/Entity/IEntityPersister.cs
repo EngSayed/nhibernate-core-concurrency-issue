@@ -65,7 +65,7 @@ namespace NHibernate.Persister.Entity
 		/// <summary>
 		/// Load an instance of the persistent class.
 		/// </summary>
-		Task<object> LoadAsync(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, CancellationToken cancellationToken);
+		Task<object> LoadAsync(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Do a version check (optional operation)

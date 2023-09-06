@@ -21,6 +21,6 @@ namespace NHibernate.Loader.Entity
 	public abstract partial class AbstractBatchingEntityLoader : IUniqueEntityLoader
 	{
 
-		public abstract Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, CancellationToken cancellationToken);
+		public abstract Task<object> LoadAsync(object id, object optionalObject, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken);
 	}
 }

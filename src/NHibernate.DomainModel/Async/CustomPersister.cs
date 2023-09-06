@@ -77,7 +77,7 @@ namespace NHibernate.DomainModel
 			return Task.FromResult<object[]>(null);
 		}
 
-		public async Task<object> LoadAsync(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, CancellationToken cancellationToken)
+		public async Task<object> LoadAsync(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken)
 		{
 			// fails when optional object is supplied
 			Custom clone = null;

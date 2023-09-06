@@ -51,6 +51,6 @@ namespace NHibernate.Loader.Entity
 			return null;
 		}
 
-		public abstract object Load(object id, object optionalObject, ISessionImplementor session);
+		public abstract object Load(object id, object optionalObject, ISessionImplementor session, bool checkCache);
 	}
 }

@@ -124,7 +124,7 @@ namespace NHibernate.Event.Default
 
 			string previousFetchProfile = source.FetchProfile;
 			source.FetchProfile = "refresh";
-			object result = await (persister.LoadAsync(id, obj, @event.LockMode, source, cancellationToken)).ConfigureAwait(false);
+			object result = await (persister.LoadAsync(id, obj, @event.LockMode, source, true, cancellationToken)).ConfigureAwait(false);
 			
 			if (result != null)
 				if (!persister.IsMutable)

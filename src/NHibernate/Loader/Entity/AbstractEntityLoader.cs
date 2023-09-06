@@ -34,7 +34,7 @@ namespace NHibernate.Loader.Entity
 			get { return true; }
 		}
 
-		public object Load(object id, object optionalObject, ISessionImplementor session)
+		public object Load(object id, object optionalObject, ISessionImplementor session, bool checkCache)
 		{
 			return Load(session, id, optionalObject, id);
 		}

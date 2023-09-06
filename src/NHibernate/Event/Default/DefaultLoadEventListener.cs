@@ -328,7 +328,7 @@ namespace NHibernate.Event.Default
 				log.Debug("object not resolved in any cache: {0}", MessageHelper.InfoString(persister, @event.EntityId, @event.Session.Factory));
 			}
 
-			return LoadFromDatasource(@event, persister, keyToLoad, options);
+			return LoadFromDatasource(@event, persister, keyToLoad, options, false);
 		}
 
 		/// <summary>
@@ -338,8 +338,9 @@ namespace NHibernate.Event.Default
 		/// <param name="persister">The persister for the entity being requested for load </param>
 		/// <param name="keyToLoad">The EntityKey representing the entity to be loaded. </param>
 		/// <param name="options">The load options. </param>
+		/// <param name="checkCache">Flag to check from cache or not</param>
 		/// <returns> The object loaded from the datasource, or null if not found. </returns>
-		protected virtual object LoadFromDatasource(LoadEvent @event, IEntityPersister persister, EntityKey keyToLoad, LoadType options)
+		protected virtual object LoadFromDatasource(LoadEvent @event, IEntityPersister persister, EntityKey keyToLoad, LoadType options, bool checkCache)
 		{
 			ISessionImplementor source = @event.Session;
 
@@ -349,7 +350,7 @@ namespace NHibernate.Event.Default
 				stopWatch = Stopwatch.StartNew();
 			}
 
-			object entity = persister.Load(@event.EntityId, @event.InstanceToLoad, @event.LockMode, source);
+			object entity = persister.Load(@event.EntityId, @event.InstanceToLoad, @event.LockMode, source, checkCache);
 
 			if (stopWatch != null && @event.IsAssociationFetch)
 			{

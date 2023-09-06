@@ -1111,7 +1111,7 @@ namespace NHibernate.Persister.Entity
 		/// <summary>
 		/// Load an instance using the appropriate loader (as determined by <see cref="GetAppropriateLoader" />
 		/// </summary>
-		public Task<object> LoadAsync(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, CancellationToken cancellationToken)
+		public Task<object> LoadAsync(object id, object optionalObject, LockMode lockMode, ISessionImplementor session, bool checkCache, CancellationToken cancellationToken)
 		{
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -1125,7 +1125,7 @@ namespace NHibernate.Persister.Entity
 				}
 
 				IUniqueEntityLoader loader = GetAppropriateLoader(lockMode, session);
-				return loader.LoadAsync(id, optionalObject, session, cancellationToken);
+				return loader.LoadAsync(id, optionalObject, session, checkCache, cancellationToken);
 			}
 			catch (Exception ex)
 			{
